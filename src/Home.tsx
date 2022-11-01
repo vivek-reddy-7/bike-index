@@ -47,7 +47,7 @@ const Home: React.FC  = (): React.ReactElement => {
    
   const [bikeArr, setBikeArr] = useState<BikeData[]>([])
   const [page, setPage] = useState<number>(1)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   function handlePageChange (event: React.ChangeEvent<unknown>, pageNum: number): void {
     setPage(pageNum)
