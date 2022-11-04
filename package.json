@@ -2,6 +2,7 @@
   "name": "bike-index",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://vivek-reddy-7.github.io/bike-index",
   "dependencies": {
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
@@ -19,6 +20,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "predeploy": "npm run build",
+   "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -57,6 +60,7 @@
     "eslint-plugin-n": "^15.4.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.31.10",
+    "gh-pages": "^4.0.0",
     "prettier": "^2.7.1",
     "typescript": "^4.8.4"
   }
