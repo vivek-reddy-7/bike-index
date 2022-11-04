@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/bike-index/static/css/main.e6c13ad2.css",
+    "main.js": "/bike-index/static/js/main.3a503527.js",
+    "static/media/bike-image.svg": "/bike-index/static/media/bike-image.f3f9c6da9b3188867cdbb0d153e8b681.svg",
+    "index.html": "/bike-index/index.html",
+    "main.e6c13ad2.css.map": "/bike-index/static/css/main.e6c13ad2.css.map",
+    "main.3a503527.js.map": "/bike-index/static/js/main.3a503527.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.3a503527.js"
+  ]
+}
