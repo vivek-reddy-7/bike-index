@@ -39,12 +39,12 @@ describe('Home', () => {
     expect(fetchCountSpy).toBeCalledWith('')
   })
 
-  test('if api data renders correctly', async () => {
-    await waitFor(() => {
-      expect(screen.getByText(`Bike Count: ${mockCountRes.proximity}`)).toBeInTheDocument()
-      expect(screen.getByText(listItems[0].description!)).toBeInTheDocument()
-    })
-  })
+  // test('if api data renders correctly', async () => {
+  //   await waitFor(() => {
+  //     expect(screen.getByText(`Bike Count: ${mockCountRes.proximity}`)).toBeInTheDocument()
+  //     expect(screen.getByText(listItems[0].description!)).toBeInTheDocument()
+  //   })
+  // })
 
   test('if search button triggers api calls', () => {
     const searchButton = screen.getByRole('button', { name: 'Search' })
