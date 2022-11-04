@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from 'react'
+/* eslint-disable no-useless-return */
+import React, { useEffect, useState, useRef } from 'react'
 import { Pagination } from '@mui/material'
+import styled from 'styled-components'
 import { BikeList } from './BikeList'
+import { SearchComponent } from './SearchComponent'
+import { fetchBikes, fetchCount } from './api/fetchData'
 
-interface BikeApiResponse {
+export interface BikeApiResponse {
   bikes: BikeData[]
 }
 
@@ -36,87 +40,103 @@ export interface CountApiResponse {
   proximity: number
 }
 
-async function fetchBikes (page: number): Promise<BikeData[] | undefined> {
-  try {
-    const res = await fetch(`https://bikeindex.org/api/v3/search?page=${page}&per_page=10&location=Sydney&distance=10&stolenness=proximity`)
-    const data = await res.json() as BikeApiResponse
-
-    return data.bikes
-  } catch (err) {
-    console.log(err)
-    alert('Something went wrong.')
-  }
+export interface ApiErrorState {
+  count: boolean
+  list: boolean
 }
 
-async function fetchCount (): Promise<number | undefined> {
-  try {
-    const res = await fetch('https://bikeindex.org/api/v3/search/count?location=sydney&distance=10&stolenness=stolen')
-    const data = await res.json() as CountApiResponse
+const HomeTitle = styled.div`
+text-align: center;
+`
+const PaginationWrapper = styled.div`
+display: flex; 
+justify-content: flex-end; 
+margin-top: 16px;
+`
 
-    return data.proximity
-  } catch (error) {
-    console.log(error)
-    alert('Something went wrong.')
-  }
-}
+const HomeWrapper = styled.div`
+  padding: 24px 5%;
+`
+
+const BikeCountWrapper = styled.div`
+  padding: 16px;
+`
 
 const Home: React.FC = (): React.ReactElement => {
   const [bikeArr, setBikeArr] = useState<BikeData[]>([])
   const [page, setPage] = useState<number>(1)
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [bikeCount, setBikeCount] = useState<number | null>(null)
+  const [bikeCount, setBikeCount] = useState<number>(0)
+  const [searchInput, setSearchInput] = useState<string>('')
+  const prevSearch = useRef<string>('')
+  const [apiError, SetApiError] = useState<ApiErrorState>({ count: false, list: false })
 
-  const pageCount = (bikeCount != null) ? Math.ceil(bikeCount / 10) : 0
+  const pageCount = Math.ceil(bikeCount / 10)
 
   function handlePageChange (event: React.ChangeEvent<unknown>, pageNum: number): void {
     setPage(pageNum)
   }
 
-  useEffect(() => {
-    async function getBikes (page: number): Promise<undefined> {
-      setIsLoading(true)
-      const newBikes = await fetchBikes(page)
-      if (newBikes !== undefined) {
-        setBikeArr(newBikes)
-        setIsLoading(false)
-      }
-      setIsLoading(false)
-      // eslint-disable-next-line no-useless-return
-      return
+  async function getCount (query: string): Promise<undefined> {
+    const count = await fetchCount(query)
+    if (count !== undefined) {
+      setBikeCount(count)
+      SetApiError({ ...apiError, count: false })
+    } else {
+      SetApiError({ ...apiError, count: true })
     }
+    return
+  }
 
-    void getBikes(page)
-  }, [page])
+  async function getBikes (pageNum: number, query: string): Promise<undefined> {
+    const newBikes = await fetchBikes(pageNum, query)
+    if (newBikes !== undefined) {
+      setBikeArr(newBikes)
+      SetApiError({ ...apiError, list: false })
+    } else {
+      SetApiError({ ...apiError, list: true })
+    }
+    return
+  }
 
   useEffect(() => {
-    async function getCount (): Promise<undefined> {
-      const count = await fetchCount()
-      if (count !== undefined) {
-        setBikeCount(count)
-      }
-      // eslint-disable-next-line no-useless-return
-      return
-    }
-
-    void getCount()
+    void getCount(searchInput)
   }, [])
 
+  useEffect(() => {
+    async function helper (): Promise<undefined> {
+      setIsLoading(true)
+      if (searchInput !== prevSearch.current) {
+        await getCount(searchInput)
+      }
+      await getBikes(page, searchInput)
+      setIsLoading(false)
+      return
+    }
+
+    void helper()
+  }, [page, searchInput])
+
+  useEffect(() => {
+    prevSearch.current = searchInput
+  }, [searchInput])
+
   return (
-    <div style={{ width: '900px', margin: '10px auto' }}>
-      <div>
-        <span>Bike Count: {bikeCount === null ? 'Loading' : bikeCount}</span>
-      </div>
+    <HomeWrapper>
+      <HomeTitle><span><strong>Stolen bikes in the Sydney Area</strong></span></HomeTitle>
+      <SearchComponent setPage={setPage} setSearchInput={setSearchInput} isSearchDisabled={isLoading} />
+      <BikeCountWrapper>
+        <span>Bike Count: {isLoading ? 'Loading...' : apiError.count ? 'Error while fetching count' : bikeCount}</span>
+      </BikeCountWrapper>
       <div data-testid='listDiv'>
-        {isLoading
-          ? 'Loading'
-          : <BikeList list={bikeArr} />
-        }
+           <BikeList list={bikeArr} apiErrorState={apiError.list} isLoading={isLoading} />
+
       </div>
 
-    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }} data-testid='paginationDiv'>
+    <PaginationWrapper data-testid='paginationDiv'>
     <Pagination count={pageCount} variant="outlined" shape="rounded" onChange={handlePageChange} disabled={isLoading} page={page} />
-    </div>
-    </div>
+    </PaginationWrapper>
+    </HomeWrapper>
 
   )
 }

@@ -1,11 +1,11 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { BikeList } from './BikeList'
-import { BikeData } from './Home'
+import { BikeData, ApiErrorState } from './Home'
 
 const itemOne: BikeData = {
   date_stolen: 1667252196,
-  description: null,
+  description: 'lorem ipsum',
   frame_colors: [
     'Silver, gray or bare metal'
   ],
@@ -35,7 +35,7 @@ const itemOne: BikeData = {
 const itemTwo: BikeData =
   {
     date_stolen: null,
-    description: null,
+    description: 'dolor set amit',
     frame_colors: [
       'Blue',
       'White'
@@ -60,16 +60,30 @@ const itemTwo: BikeData =
     year: null
   }
 
-const listItems = [itemOne, itemTwo]
+export const listItems = [itemOne, itemTwo]
+const apiErrorStateOne: ApiErrorState = {
+  count: false,
+  list: false
+}
+const apiErrorStateTwo: ApiErrorState = {
+  count: false,
+  list: true
+}
 
 describe('bike list', () => {
   test('if all items render', () => {
-    const { container } = render(<BikeList list={listItems} />)
-    expect(container.getElementsByClassName('itemWrapper').length).toBe(2)
+    render(<BikeList list={listItems} isLoading={false} apiErrorState={apiErrorStateOne.list} />)
+    expect(screen.getAllByTestId('bike-item-container').length).toBe(2)
   })
 
-  test('if fallback text is displayed', () => {
-    render(<BikeList list={[]} />)
+  test('if fallback text is displayed appropriately', () => {
+    render(<BikeList list={[]} isLoading={false} apiErrorState={apiErrorStateOne.list} />)
     expect(screen.getByText('no bikes')).toBeInTheDocument()
+    cleanup()
+    render(<BikeList list={[]} isLoading={true} apiErrorState={apiErrorStateOne.list} />)
+    expect(screen.getByText('Loading...')).toBeInTheDocument()
+    cleanup()
+    render(<BikeList list={[]} isLoading={false} apiErrorState={apiErrorStateTwo.list} />)
+    expect(screen.getByText('Error while fetching bikes')).toBeInTheDocument()
   })
 })
